@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# monitor.sh: Monitor CPU and RAM usage for a predefined sequence of commands and record its duration
+# monitor.sh: Monitor CPU, RAM, GPU usage for a predefined sequence of commands and record its duration
 # Usage: ./monitor.sh [-i interval_in_seconds] [-o logfile]
 
 INTERVAL=1
@@ -27,19 +27,14 @@ while getopts ":i:o:h" opt; do
 done
 
 # Define the commands to run (edit this line below):
-COMMAND="stress --cpu 4 --timeout 60"
+# You can list multiple commands separated by semicolons (e.g., "cmd1; cmd2; cmd3").
+COMMAND="cmd1; cmd2; cmd3"
 
 # Record start timestamp
 START_TS=$(date +%s)
 
-# Initialize or append CSV file
-if [ ! -f "$OUTFILE" ]; then
-  echo "timestamp,cpu_percent,mem_percent" > "$OUTFILE"
-  echo "Created new log file: $OUTFILE"
-else
-  echo "timestamp,cpu_percent,mem_percent" > "$OUTFILE"
-  echo "Appending to existing log file: $OUTFILE"
-fi
+# Write CSV header
+echo "timestamp,cpu_percent,mem_percent,gpu_util_percent,gpu_mem_used_mb" > "$OUTFILE"
 
 # Launch the sequence of commands in a single subshell, in background
 bash -c "$COMMAND" &
@@ -48,10 +43,19 @@ PID=$!
 # Monitoring loop
 while kill -0 "$PID" 2>/dev/null; do
   TIMESTAMP=$(date +%s.%N)
-  CPU=$(mpstat -P ALL 1 1 | awk 'NR==4 {print $3}')
-  MEM=$(free | awk '/Mem:/ {print $3/$2*100 "%"}')
+  CPU=$(ps -p "$PID" -o %cpu= | awk '{print $1}')
+  MEM=$(ps -p "$PID" -o %mem= | awk '{print $1}')
 
-  echo "$TIMESTAMP,$CPU,$MEM" >> "$OUTFILE"
+  # GPU stats via nvidia-smi if available
+  if command -v nvidia-smi >/dev/null 2>&1; then
+    GPU_UTIL=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits | head -n1)
+    GPU_MEM=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits | head -n1)
+  else
+    GPU_UTIL="N/A"
+    GPU_MEM="N/A"
+  fi
+
+  echo "$TIMESTAMP,$CPU,$MEM,$GPU_UTIL,$GPU_MEM" >> "$OUTFILE"
   sleep "$INTERVAL"
 done
 

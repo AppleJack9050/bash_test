@@ -7,8 +7,8 @@
 ######## remember to add name of monitor file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ###############################################################################################
 
-INTERVAL=1
-OUTFILE="monitor_gpu.log"
+INTERVAL=30
+OUTFILE="monitor_openmvg_0.log"
 
 show_help() {
   echo "Usage: $0 [-i interval_in_seconds] [-o logfile]"
@@ -32,7 +32,8 @@ done
 
 # Define the commands to run (edit this line below):
 # COMMAND="colmap feature_extractor --database_path /home/otter77/colmap_work_dir/database.db --image_path /home/otter77/Dataset/2016-11-28_Howchin-AlphLake_Imagery-Files.beh/JPG"
-COMMAND="cd /home/otter77/gpu-burn;./gpu_burn 30"
+COMMAND="cd /home/otter77/openMVG/openMVG_Build/software/SfM;
+         python SfM_SequentialPipeline.py /home/otter77/Dataset/2016-11-28_Howchin-AlphLake_Imagery-Files.beh/JPG /home/otter77/openmvg_workdir"
 
 # Record start timestamp
 START_TS=$(date +%s)

@@ -48,7 +48,7 @@ PID=$!
 # Monitoring loop
 while kill -0 "$PID" 2>/dev/null; do
   TIMESTAMP=$(date +%s.%N)
-  CPU=$(mpstat -P ALL 1 1 | awk 'NR==4 {print $3}')
+  CPU=$(mpstat -P ALL 1 1 | awk 'NR==4 {print $3 "%"}')
   MEM=$(free | awk '/Mem:/ {print $3/$2*100 "%"}')
 
   echo "$TIMESTAMP,$CPU,$MEM" >> "$OUTFILE"

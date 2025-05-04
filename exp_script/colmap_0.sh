@@ -7,8 +7,8 @@
 ######## remember to add name of monitor file!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ###############################################################################################
 
-INTERVAL=1
-OUTFILE="monitor_gpu.log"
+INTERVAL=30
+OUTFILE="monitor_colmap_0.log"
 
 show_help() {
   echo "Usage: $0 [-i interval_in_seconds] [-o logfile]"
@@ -32,7 +32,16 @@ done
 
 # Define the commands to run (edit this line below):
 # COMMAND="colmap feature_extractor --database_path /home/otter77/colmap_work_dir/database.db --image_path /home/otter77/Dataset/2016-11-28_Howchin-AlphLake_Imagery-Files.beh/JPG"
-COMMAND="cd /home/otter77/gpu-burn;./gpu_burn 30"
+COMMAND="colmap feature_extractor \
+   --database_path /home/otter77/colmap_work_dir/database.db \
+   --image_path /home/otter77/Dataset/2016-11-28_Howchin-AlphLake_Imagery-Files.beh/JPG;
+   colmap exhaustive_matcher \
+   --database_path /home/otter77/colmap_work_dir/database.db;
+   mkdir /home/otter77/colmap_work_dir/sparse;
+   colmap mapper \
+    --database_path /home/otter77/colmap_work_dir/database.db \
+    --image_path /home/otter77/Dataset/2016-11-28_Howchin-AlphLake_Imagery-Files.beh/JPG \
+    --output_path /home/otter77/colmap_work_dir/sparse"
 
 # Record start timestamp
 START_TS=$(date +%s)
